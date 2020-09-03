@@ -17,11 +17,34 @@
 
 package com.example.android.devbyteviewer.work
 
-// TODO (01) Create the RefreshDataWorker class, extend it from CoroutineWorker, and
+import android.content.Context
+import android.media.AudioRecord.SUCCESS
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import com.bumptech.glide.load.HttpException
+import com.example.android.devbyteviewer.database.getDatabase
+import com.example.android.devbyteviewer.repository.VideosRepository
+
+// DONE (01) Create the RefreshDataWorker class, extend it from CoroutineWorker, and
 // pass in a Context and WorkerParams.
 
-// TODO (02) Override the required doWork() method, and create variables for the
+// DONE (02) Override the required doWork() method, and create variables for the
 // database and the repository.
 
-// TODO (03) Inside doWork(), in a try-catch block, refresh the videos, and
+// DONE (03) Inside doWork(), in a try-catch block, refresh the videos, and
 // use Payload() to return SUCCESS or RETRY result.
+class RefreshDataWorker(appContext: Context, params: WorkerParameters):
+        CoroutineWorker(appContext, params) {
+    override suspend fun doWork(): Result {
+
+            val database = getDatabase(applicationContext)
+            val repository = VideosRepository(database)
+            return try {
+                repository.refreshVideos()
+                return Result.success()
+            } catch (e: HttpException) {
+                return Result.retry()
+            }
+
+    }
+}
